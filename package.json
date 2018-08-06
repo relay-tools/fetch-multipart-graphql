@@ -1,6 +1,6 @@
 {
   "name": "fetch-multipart-graphql",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cross browser function to fetch and parse streaming multipart graphql responses.",
   "main": "dist/index.js",
   "repository": "git@github.com:relay-tools/fetch-multipart-graphql.git",
@@ -12,7 +12,10 @@
     "prepublishOnly": "yarn run build"
   },
   "jest": {
-    "testPathIgnorePatterns": ["/node_modules/", "/dist/"],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
     "testEnvironment": "node"
   },
   "devDependencies": {
