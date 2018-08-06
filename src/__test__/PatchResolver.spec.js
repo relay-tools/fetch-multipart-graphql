@@ -1,26 +1,4 @@
 import { PatchResolver } from '../PatchResolver';
-/*
-Full response for reference
----
-Content-Type: application/json
-Content-Length: 64
-
-{"data":{"viewer":{"currencies":null,"user":{"profile":null}}}}
-
----
-Content-Type: application/json
-Content-Length: 84
-
-{"path":["viewer","currencies"],"data":["USD","GBP","EUR","CAD","AUD","CHF","MXN"]}
-
----
-Content-Type: application/json
-Content-Length: 77
-
-{"path":["viewer","user","profile"],"data":{"displayName":"Steven Sumberg"}}
-
------
- */
 
 const chunk1 = [
     '',
@@ -31,6 +9,15 @@ const chunk1 = [
     '{"data":{"viewer":{"currencies":null,"user":{"profile":null}}}}\n',
 ].join('\r\n');
 
+const chunk1error = [
+    '',
+    '---',
+    'Content-Type: application/json',
+    'Content-Length: 104',
+    '',
+    '{"data":{"viewer":{"currencies":null,"user":{"profile":null}}},"errors":[{"message":"Very Bad Error"}]}\n',
+].join('\r\n');
+
 const chunk2 = [
     '',
     '---',
@@ -38,6 +25,15 @@ const chunk2 = [
     'Content-Length: 84',
     '',
     '{"path":["viewer","currencies"],"data":["USD","GBP","EUR","CAD","AUD","CHF","MXN"]}\n',
+].join('\r\n');
+
+const chunk2error = [
+    '',
+    '---',
+    'Content-Type: application/json',
+    'Content-Length: 126',
+    '',
+    '{"path":["viewer","currencies"],"data":["USD","GBP","EUR","CAD","AUD","CHF","MXN"],"errors":[{"message":"Not So Bad Error"}]}\n',
 ].join('\r\n');
 
 const chunk3 = [
@@ -133,6 +129,41 @@ describe('PathResolver', function() {
                     user: { profile: { displayName: 'Steven Seagal' } },
                 },
             },
+        });
+    });
+
+    it.only('should merge errors', function() {
+        const onResponse = jest.fn();
+        const resolver = new PatchResolver({
+            onResponse,
+        });
+
+        resolver.handleChunk(chunk1error);
+        expect(onResponse).toHaveBeenCalledWith({
+            data: { viewer: { currencies: null, user: { profile: null } } },
+            errors: [{ message: 'Very Bad Error' }],
+        });
+        onResponse.mockClear();
+        resolver.handleChunk(chunk2error);
+        expect(onResponse).toHaveBeenCalledWith({
+            data: {
+                viewer: {
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    user: { profile: null },
+                },
+            },
+            errors: [{ message: 'Very Bad Error' }, { message: 'Not So Bad Error' }],
+        });
+        onResponse.mockClear();
+        resolver.handleChunk(chunk3);
+        expect(onResponse).toHaveBeenCalledWith({
+            data: {
+                viewer: {
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    user: { profile: { displayName: 'Steven Seagal' } },
+                },
+            },
+            errors: [{ message: 'Very Bad Error' }, { message: 'Not So Bad Error' }],
         });
     });
 });

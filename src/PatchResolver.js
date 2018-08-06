@@ -15,6 +15,17 @@ function applyPatch(previousResponse, patchPath, patchData) {
     };
 }
 
+function mergeErrors(previousErrors, patchErrors) {
+    if (previousErrors && patchErrors) {
+        return [].concat(previousErrors, patchErrors);
+    } else if (previousErrors) {
+        return previousErrors;
+    } else if (patchErrors) {
+        return patchErrors;
+    }
+    return undefined;
+}
+
 export class PatchResolver {
     constructor({ onResponse }) {
         this.onResponse = onResponse;
@@ -41,6 +52,7 @@ export class PatchResolver {
                     this.previousResponse = {
                         ...this.previousResponse,
                         data: applyPatch(this.previousResponse.data, part.path, part.data),
+                        errors: mergeErrors(this.previousResponse.errors, part.errors),
                     };
 
                     this.onResponse(this.previousResponse);

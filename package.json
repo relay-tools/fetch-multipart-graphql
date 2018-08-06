@@ -8,10 +8,11 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "build": "babel src --out-dir dist",
+    "build": "babel src --out-dir dist --ignore '**/*.spec.js'",
     "prepublishOnly": "yarn run build"
   },
   "jest": {
+    "testPathIgnorePatterns": ["/node_modules/", "/dist/"],
     "testEnvironment": "node"
   },
   "devDependencies": {
