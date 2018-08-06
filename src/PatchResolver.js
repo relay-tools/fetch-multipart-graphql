@@ -46,7 +46,7 @@ PatchResolver.prototype.handleChunk = function(data) {
                 this.previousResponse = part;
                 this.onResponse(this.previousResponse);
             } else {
-                if (!(part.path && part.data)) {
+                if (!(Array.isArray(part.path) && typeof part.data !== 'undefined')) {
                     throw new Error('invalid patch format ' + JSON.stringify(part, null, 2));
                 }
                 this.previousResponse = {
