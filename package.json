@@ -1,0 +1,24 @@
+{
+  "name": "fetch-multipart-graphql",
+  "version": "1.0.0",
+  "description": "Cross browser function to fetch and parse streaming multipart graphql responses.",
+  "main": "index.js",
+  "repository": "git@github.com:relay-tools/fetch-multipart-graphql.git",
+  "author": "Rob Richard <rob@robrichard.net>",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "build": "babel src --out-dir dist",
+    "prepublishOnly": "yarn run build"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "jest": "^23.4.2"
+  },
+  "dependencies": {}
+}
