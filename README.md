@@ -1,7 +1,7 @@
 # fetch-multipart-graphql
 Cross-browser function to fetch and parse streaming multipart graphql responses.
 
-This allows you to efficiently fetch streamed GraphQL responses that use the @defer directive as supported by (Apollo Server)[https://blog.apollographql.com/introducing-defer-in-apollo-server-f6797c4e9d6e]. It can be easily used in a Relay Modern network layer to support deferred queries.
+This allows you to efficiently fetch streamed GraphQL responses that use the @defer directive as supported by [Apollo Server](https://blog.apollographql.com/introducing-defer-in-apollo-server-f6797c4e9d6e). It can be easily used in a Relay Modern network layer to support deferred queries.
 
 ## Usage
 
