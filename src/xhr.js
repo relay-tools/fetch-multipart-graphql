@@ -14,13 +14,28 @@ function supportsXhrResponseType(type) {
 export function xhrImpl(url, { method, headers, body, onNext, onError, onComplete }) {
     const xhr = new XMLHttpRequest();
     let index = 0;
+    let isDeferred = false;
 
     const patchResolver = new PatchResolver({ onResponse: r => onNext(r) });
 
     function onProgressEvent() {
-        const chunk = xhr.response.substr(index);
-        patchResolver.handleChunk(chunk);
-        index = xhr.responseText.length;
+        if (isDeferred) {
+            const chunk = xhr.response.substr(index);
+            patchResolver.handleChunk(chunk);
+            index = xhr.responseText.length;
+        }
+    }
+
+    function onReadyStateChange() {
+        if (this.readyState === this.HEADERS_RECEIVED) {
+            const contentType = xhr.getResponseHeader('Content-Type');
+            if (contentType.indexOf('multipart/mixed') >= 0) {
+                isDeferred = true;
+            }
+        } else if (this.readyState === this.DONE && !isDeferred) {
+            onNext(JSON.parse(xhr.response));
+            onComplete();
+        }
     }
 
     function onLoadEvent() {
@@ -41,6 +56,7 @@ export function xhrImpl(url, { method, headers, body, onNext, onError, onComplet
         xhr.responseType = 'moz-chunked-text';
     }
 
+    xhr.addEventListener('readystatechange', onReadyStateChange);
     xhr.addEventListener('progress', onProgressEvent);
     xhr.addEventListener('loaded', onLoadEvent);
     xhr.addEventListener('error', onErrorEvent);
