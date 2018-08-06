@@ -26,39 +26,38 @@ function mergeErrors(previousErrors, patchErrors) {
     return undefined;
 }
 
-export class PatchResolver {
-    constructor({ onResponse }) {
-        this.onResponse = onResponse;
-        this.previousResponse = null;
-        this.chunkBuffer = '';
-        this.processedChunks = 0;
-    }
-    handleChunk(data) {
-        const results = parseMultipartHTTP(this.chunkBuffer + data);
-        if (results === null) {
-            // The part is not complete yet, add it to the buffer
-            // and wait for the next chunk to arrive
-            this.chunkBuffer += data;
-        } else {
-            this.chunkBuffer = ''; // Reset
-            for (const part of results) {
-                if (this.processedChunks === 0) {
-                    this.previousResponse = part;
-                    this.onResponse(this.previousResponse);
-                } else {
-                    if (!(part.path && part.data)) {
-                        throw new Error('invalid patch format ' + JSON.stringify(part, null, 2));
-                    }
-                    this.previousResponse = {
-                        ...this.previousResponse,
-                        data: applyPatch(this.previousResponse.data, part.path, part.data),
-                        errors: mergeErrors(this.previousResponse.errors, part.errors),
-                    };
+export function PatchResolver({ onResponse }) {
+    this.onResponse = onResponse;
+    this.previousResponse = null;
+    this.chunkBuffer = '';
+    this.processedChunks = 0;
+}
 
-                    this.onResponse(this.previousResponse);
+PatchResolver.prototype.handleChunk = function(data) {
+    const results = parseMultipartHTTP(this.chunkBuffer + data);
+    if (results === null) {
+        // The part is not complete yet, add it to the buffer
+        // and wait for the next chunk to arrive
+        this.chunkBuffer += data;
+    } else {
+        this.chunkBuffer = ''; // Reset
+        for (const part of results) {
+            if (this.processedChunks === 0) {
+                this.previousResponse = part;
+                this.onResponse(this.previousResponse);
+            } else {
+                if (!(part.path && part.data)) {
+                    throw new Error('invalid patch format ' + JSON.stringify(part, null, 2));
                 }
-                this.processedChunks += 1;
+                this.previousResponse = {
+                    ...this.previousResponse,
+                    data: applyPatch(this.previousResponse.data, part.path, part.data),
+                    errors: mergeErrors(this.previousResponse.errors, part.errors),
+                };
+
+                this.onResponse(this.previousResponse);
             }
+            this.processedChunks += 1;
         }
     }
-}
+};

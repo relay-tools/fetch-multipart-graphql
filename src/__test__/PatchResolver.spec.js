@@ -132,7 +132,7 @@ describe('PathResolver', function() {
         });
     });
 
-    it.only('should merge errors', function() {
+    it('should merge errors', function() {
         const onResponse = jest.fn();
         const resolver = new PatchResolver({
             onResponse,
