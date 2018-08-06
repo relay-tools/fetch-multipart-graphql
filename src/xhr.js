@@ -11,8 +11,6 @@ function supportsXhrResponseType(type) {
     return false;
 }
 
-const supportsMozChunked = supportsXhrResponseType('moz-chunked-text');
-
 export function xhrImpl(url, { method, headers, body, onNext, onError, onComplete }) {
     const xhr = new XMLHttpRequest();
     let index = 0;
@@ -39,7 +37,7 @@ export function xhrImpl(url, { method, headers, body, onNext, onError, onComplet
         xhr.setRequestHeader(header, value);
     }
 
-    if (supportsMozChunked) {
+    if (supportsXhrResponseType('moz-chunked-text')) {
         xhr.responseType = 'moz-chunked-text';
     }
 
