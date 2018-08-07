@@ -18,20 +18,19 @@ export function xhrImpl(url, { method, headers, body, onNext, onError, onComplet
 
     const patchResolver = new PatchResolver({ onResponse: r => onNext(r) });
 
-    function onProgressEvent() {
-        if (isDeferred) {
-            const chunk = xhr.response.substr(index);
-            patchResolver.handleChunk(chunk);
-            index = xhr.responseText.length;
-        }
-    }
-
     function onReadyStateChange() {
         if (this.readyState === this.HEADERS_RECEIVED) {
             const contentType = xhr.getResponseHeader('Content-Type');
             if (contentType.indexOf('multipart/mixed') >= 0) {
                 isDeferred = true;
             }
+        } else if (
+            (this.readyState === this.LOADING || this.readyState === this.DONE) &&
+            isDeferred
+        ) {
+            const chunk = xhr.response.substr(index);
+            patchResolver.handleChunk(chunk);
+            index = xhr.responseText.length;
         } else if (this.readyState === this.DONE && !isDeferred) {
             onNext(JSON.parse(xhr.response));
             onComplete();
@@ -57,7 +56,6 @@ export function xhrImpl(url, { method, headers, body, onNext, onError, onComplet
     }
 
     xhr.addEventListener('readystatechange', onReadyStateChange);
-    xhr.addEventListener('progress', onProgressEvent);
     xhr.addEventListener('loaded', onLoadEvent);
     xhr.addEventListener('error', onErrorEvent);
     xhr.send(body);
