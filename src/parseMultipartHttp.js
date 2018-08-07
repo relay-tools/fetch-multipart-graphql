@@ -47,8 +47,9 @@ export function parseMultipartHttp(buffer, previousParts = []) {
 
     // Strip out the terminating boundary
     rest = rest.replace(terminatingBoundary, '');
+    const uint = new TextEncoder().encode(rest);
 
-    if (rest.length < contentLength) {
+    if (uint.length < contentLength) {
         // still waiting for more body to be sent;
         return {
             newBuffer: buffer,
@@ -56,8 +57,8 @@ export function parseMultipartHttp(buffer, previousParts = []) {
         };
     }
 
-    const body = rest.substring(0, contentLength);
-    const nextBuffer = rest.substring(contentLength);
+    const body = new TextDecoder().decode(uint.subarray(0, contentLength));
+    const nextBuffer = new TextDecoder().decode(uint.subarray(contentLength));
     const part = JSON.parse(body);
     const newParts = [...previousParts, part];
 

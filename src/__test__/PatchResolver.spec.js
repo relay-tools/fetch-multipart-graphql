@@ -1,4 +1,8 @@
 import { PatchResolver } from '../PatchResolver';
+import { TextEncoder, TextDecoder } from 'util';
+// polyfill TextDecoder/Encoder for node
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 const chunk1 = [
     '',
@@ -22,18 +26,18 @@ const chunk2 = [
     '',
     '---',
     'Content-Type: application/json',
-    'Content-Length: 84',
+    'Content-Length: 85',
     '',
-    '{"path":["viewer","currencies"],"data":["USD","GBP","EUR","CAD","AUD","CHF","MXN"]}\n',
+    '{"path":["viewer","currencies"],"data":["USD","GBP","EUR","CAD","AUD","CHF","😂"]}\n', // test unicode
 ].join('\r\n');
 
 const chunk2error = [
     '',
     '---',
     'Content-Type: application/json',
-    'Content-Length: 126',
+    'Content-Length: 127',
     '',
-    '{"path":["viewer","currencies"],"data":["USD","GBP","EUR","CAD","AUD","CHF","MXN"],"errors":[{"message":"Not So Bad Error"}]}\n',
+    '{"path":["viewer","currencies"],"data":["USD","GBP","EUR","CAD","AUD","CHF","😂"],"errors":[{"message":"Not So Bad Error"}]}\n',
 ].join('\r\n');
 
 const chunk3 = [
@@ -63,7 +67,7 @@ describe('PathResolver', function() {
         expect(onResponse).toHaveBeenCalledWith({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: null },
                 },
             },
@@ -73,7 +77,7 @@ describe('PathResolver', function() {
         expect(onResponse).toHaveBeenCalledWith({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: { displayName: 'Steven Seagal' } },
                 },
             },
@@ -111,7 +115,7 @@ describe('PathResolver', function() {
         expect(onResponse).toHaveBeenCalledWith({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: null },
                 },
             },
@@ -130,7 +134,7 @@ describe('PathResolver', function() {
         expect(onResponse).toHaveBeenCalledWith({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: { displayName: 'Steven Seagal' } },
                 },
             },
@@ -150,7 +154,7 @@ describe('PathResolver', function() {
         expect(onResponse.mock.calls[1][0]).toEqual({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: null },
                 },
             },
@@ -174,7 +178,7 @@ describe('PathResolver', function() {
         expect(onResponse.mock.calls[1][0]).toEqual({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: null },
                 },
             },
@@ -187,7 +191,7 @@ describe('PathResolver', function() {
         expect(onResponse).toHaveBeenCalledWith({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: { displayName: 'Steven Seagal' } },
                 },
             },
@@ -213,7 +217,7 @@ describe('PathResolver', function() {
         expect(onResponse).toHaveBeenCalledWith({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: null },
                 },
             },
@@ -236,7 +240,7 @@ describe('PathResolver', function() {
         expect(onResponse).toHaveBeenCalledWith({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: null },
                 },
             },
@@ -247,7 +251,7 @@ describe('PathResolver', function() {
         expect(onResponse).toHaveBeenCalledWith({
             data: {
                 viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', 'MXN'],
+                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
                     user: { profile: { displayName: 'Steven Seagal' } },
                 },
             },

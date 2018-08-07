@@ -34,4 +34,4 @@ function fetchQuery(operation, variables) {
 
 ## Browser Support
 
-Tested in the latest Chrome, Firefox, Safari, Edge, and Internet Explorer 11.
+Tested in the latest Chrome, Firefox, Safari, Edge, and Internet Explorer 11. Requires a polyfill for TextEncoder/Decoder. Since only utf-8 encoding is required, it's recommended to use [text-encoding-utf-8](https://www.npmjs.com/package/text-encoding-utf-8) to minimize impact on bundle size.
