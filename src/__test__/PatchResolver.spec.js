@@ -130,7 +130,6 @@ describe('PathResolver', function() {
 
         resolver.handleChunk(chunk1 + chunk2);
         expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
-        expect(onResponse.mock.calls[1][0]).toMatchSnapshot();
     });
 
     it('should work when chunks are combined and split', function() {
@@ -145,7 +144,6 @@ describe('PathResolver', function() {
 
         resolver.handleChunk(chunk1 + chunk2 + chunk3a);
         expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
-        expect(onResponse.mock.calls[1][0]).toMatchSnapshot();
         onResponse.mockClear();
 
         resolver.handleChunk(chunk3b);

@@ -46,22 +46,23 @@ PatchResolver.prototype.handleChunk = function(data) {
     this.chunkBuffer += data;
     const { newBuffer, parts } = parseMultipartHttp(this.chunkBuffer);
     this.chunkBuffer = newBuffer;
-    for (const part of parts) {
-        if (this.processedChunks === 0) {
-            this.previousResponse = part;
-            this.onResponse(this.previousResponse);
-        } else {
-            if (!(Array.isArray(part.path) && typeof part.data !== 'undefined')) {
-                throw new Error('invalid patch format ' + JSON.stringify(part, null, 2));
+    if (parts.length) {
+        parts.forEach(part => {
+            if (this.processedChunks === 0) {
+                this.previousResponse = part;
+            } else {
+                if (!(Array.isArray(part.path) && typeof part.data !== 'undefined')) {
+                    throw new Error('invalid patch format ' + JSON.stringify(part, null, 2));
+                }
+                this.previousResponse = {
+                    ...this.previousResponse,
+                    data: applyPatch(this.previousResponse.data, part.path, part.data),
+                    errors: mergeErrors(this.previousResponse.errors, part.errors),
+                };
             }
-            this.previousResponse = {
-                ...this.previousResponse,
-                data: applyPatch(this.previousResponse.data, part.path, part.data),
-                errors: mergeErrors(this.previousResponse.errors, part.errors),
-            };
-
-            this.onResponse(this.previousResponse);
-        }
-        this.processedChunks += 1;
+            this.processedChunks += 1;
+        });
+        // don't need to re-trigger every intermediate state
+        this.onResponse(this.previousResponse);
     }
 };

@@ -221,33 +221,6 @@ exports[`PathResolver should work when chunks are combined 1`] = `
 Object {
   "data": Object {
     "viewer": Object {
-      "currencies": null,
-      "user": Object {
-        "items": Object {
-          "edges": Array [
-            Object {
-              "node": Object {
-                "isFavorite": null,
-              },
-            },
-            Object {
-              "node": Object {
-                "isFavorite": null,
-              },
-            },
-          ],
-        },
-        "profile": null,
-      },
-    },
-  },
-}
-`;
-
-exports[`PathResolver should work when chunks are combined 2`] = `
-Object {
-  "data": Object {
-    "viewer": Object {
       "currencies": Array [
         "USD",
         "GBP",
@@ -347,33 +320,6 @@ exports[`PathResolver should work when chunks are combined and split 1`] = `
 Object {
   "data": Object {
     "viewer": Object {
-      "currencies": null,
-      "user": Object {
-        "items": Object {
-          "edges": Array [
-            Object {
-              "node": Object {
-                "isFavorite": null,
-              },
-            },
-            Object {
-              "node": Object {
-                "isFavorite": null,
-              },
-            },
-          ],
-        },
-        "profile": null,
-      },
-    },
-  },
-}
-`;
-
-exports[`PathResolver should work when chunks are combined and split 2`] = `
-Object {
-  "data": Object {
-    "viewer": Object {
       "currencies": Array [
         "USD",
         "GBP",
@@ -406,7 +352,7 @@ Object {
 }
 `;
 
-exports[`PathResolver should work when chunks are combined and split 3`] = `
+exports[`PathResolver should work when chunks are combined and split 2`] = `
 Object {
   "data": Object {
     "viewer": Object {
