@@ -1,18 +1,27 @@
 import { parseMultipartHttp } from './parseMultipartHttp';
 
+function insertPatch(obj, path, data) {
+    if (Array.isArray(obj) && typeof path === 'number') {
+        return [].concat(obj.slice(0, path), [data], obj.slice(path + 1));
+    } else {
+        return {
+            ...obj,
+            [path]: data,
+        };
+    }
+}
+
 // recursive function to apply the patch to the previous response
 function applyPatch(previousResponse, patchPath, patchData) {
     const [nextPath, ...rest] = patchPath;
     if (rest.length === 0) {
-        return {
-            ...previousResponse,
-            [nextPath]: patchData,
-        };
+        return insertPatch(previousResponse, nextPath, patchData);
     }
-    return {
-        ...previousResponse,
-        [nextPath]: applyPatch(previousResponse[nextPath], rest, patchData),
-    };
+    return insertPatch(
+        previousResponse,
+        nextPath,
+        applyPatch(previousResponse[nextPath], rest, patchData)
+    );
 }
 
 function mergeErrors(previousErrors, patchErrors) {

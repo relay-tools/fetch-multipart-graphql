@@ -8,9 +8,9 @@ const chunk1 = [
     '',
     '---',
     'Content-Type: application/json',
-    'Content-Length: 64',
+    'Content-Length: 142',
     '',
-    '{"data":{"viewer":{"currencies":null,"user":{"profile":null}}}}\n',
+    '{"data":{"viewer":{"currencies":null,"user":{"profile":null,"items":{"edges":[{"node":{"isFavorite":null}},{"node":{"isFavorite":null}}]}}}}}\n',
 ].join('\r\n');
 
 const chunk1error = [
@@ -47,6 +47,15 @@ const chunk3 = [
     'Content-Length: 76',
     '',
     '{"path":["viewer","user","profile"],"data":{"displayName":"Steven Seagal"}}\n',
+].join('\r\n');
+
+const chunk4 = [
+    '',
+    '---',
+    'Content-Type: application/json',
+    'Content-Length: 78',
+    '',
+    '{"data":false,"path":["viewer","user","items","edges",1,"node","isFavorite"]}\n',
     '',
     '-----\r\n',
 ].join('\r\n');
@@ -59,29 +68,19 @@ describe('PathResolver', function() {
         });
 
         resolver.handleChunk(chunk1);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: { viewer: { currencies: null, user: { profile: null } } },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
+
         onResponse.mockClear();
         resolver.handleChunk(chunk2);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: null },
-                },
-            },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
+
         onResponse.mockClear();
         resolver.handleChunk(chunk3);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: { displayName: 'Steven Seagal' } },
-                },
-            },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
+
+        onResponse.mockClear();
+        resolver.handleChunk(chunk4);
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
     });
 
     it('should work when chunks are split', function() {
@@ -89,8 +88,6 @@ describe('PathResolver', function() {
         const resolver = new PatchResolver({
             onResponse,
         });
-
-        console.log('chunk1.length', chunk1.length);
 
         const chunk1a = chunk1.substr(0, 35);
         const chunk1b = chunk1.substr(35, 80);
@@ -101,9 +98,7 @@ describe('PathResolver', function() {
         resolver.handleChunk(chunk1b);
         expect(onResponse).not.toHaveBeenCalled();
         resolver.handleChunk(chunk1c);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: { viewer: { currencies: null, user: { profile: null } } },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
         onResponse.mockClear();
 
         const chunk2a = chunk2.substr(0, 35);
@@ -112,14 +107,7 @@ describe('PathResolver', function() {
         resolver.handleChunk(chunk2a);
         expect(onResponse).not.toHaveBeenCalled();
         resolver.handleChunk(chunk2b);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: null },
-                },
-            },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
         onResponse.mockClear();
 
         const chunk3a = chunk3.substr(0, 10);
@@ -131,14 +119,7 @@ describe('PathResolver', function() {
         resolver.handleChunk(chunk3b);
         expect(onResponse).not.toHaveBeenCalled();
         resolver.handleChunk(chunk3c);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: { displayName: 'Steven Seagal' } },
-                },
-            },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
     });
 
     it('should work when chunks are combined', function() {
@@ -148,17 +129,8 @@ describe('PathResolver', function() {
         });
 
         resolver.handleChunk(chunk1 + chunk2);
-        expect(onResponse.mock.calls[0][0]).toEqual({
-            data: { viewer: { currencies: null, user: { profile: null } } },
-        });
-        expect(onResponse.mock.calls[1][0]).toEqual({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: null },
-                },
-            },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
+        expect(onResponse.mock.calls[1][0]).toMatchSnapshot();
     });
 
     it('should work when chunks are combined and split', function() {
@@ -172,30 +144,14 @@ describe('PathResolver', function() {
         const chunk3c = chunk3.substr(11 + 20);
 
         resolver.handleChunk(chunk1 + chunk2 + chunk3a);
-        expect(onResponse.mock.calls[0][0]).toEqual({
-            data: { viewer: { currencies: null, user: { profile: null } } },
-        });
-        expect(onResponse.mock.calls[1][0]).toEqual({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: null },
-                },
-            },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
+        expect(onResponse.mock.calls[1][0]).toMatchSnapshot();
         onResponse.mockClear();
 
         resolver.handleChunk(chunk3b);
         expect(onResponse).not.toHaveBeenCalled();
         resolver.handleChunk(chunk3c);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: { displayName: 'Steven Seagal' } },
-                },
-            },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
     });
 
     it('should work when chunks are combined across boundaries', function() {
@@ -208,20 +164,10 @@ describe('PathResolver', function() {
         const chunk2b = chunk2.substring(35);
 
         resolver.handleChunk(chunk1 + chunk2a);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: { viewer: { currencies: null, user: { profile: null } } },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
         onResponse.mockClear();
         resolver.handleChunk(chunk2b);
-
-        expect(onResponse).toHaveBeenCalledWith({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: null },
-                },
-            },
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
     });
 
     it('should merge errors', function() {
@@ -231,32 +177,12 @@ describe('PathResolver', function() {
         });
 
         resolver.handleChunk(chunk1error);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: { viewer: { currencies: null, user: { profile: null } } },
-            errors: [{ message: 'Very Bad Error' }],
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
         onResponse.mockClear();
         resolver.handleChunk(chunk2error);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: null },
-                },
-            },
-            errors: [{ message: 'Very Bad Error' }, { message: 'Not So Bad Error' }],
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
         onResponse.mockClear();
         resolver.handleChunk(chunk3);
-        expect(onResponse).toHaveBeenCalledWith({
-            data: {
-                viewer: {
-                    currencies: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'],
-                    user: { profile: { displayName: 'Steven Seagal' } },
-                },
-            },
-            errors: [{ message: 'Very Bad Error' }, { message: 'Not So Bad Error' }],
-        });
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
     });
-    it('should work', function() {});
 });
