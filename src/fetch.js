@@ -38,5 +38,5 @@ export function fetchImpl(url, { method, headers, body, onNext, onError, onCompl
                 onComplete();
             });
         }
-    });
+    }).catch(onError);
 }
