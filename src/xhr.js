@@ -19,6 +19,11 @@ export function xhrImpl(url, { method, headers, body, onNext, onError, onComplet
     const patchResolver = new PatchResolver({ onResponse: r => onNext(r) });
 
     function onReadyStateChange() {
+        // The request failed, do nothing and let the error event fire
+        if (this.readyState === this.DONE && this.status === 0) {
+            return;
+        }
+
         if (this.readyState === this.HEADERS_RECEIVED) {
             const contentType = xhr.getResponseHeader('Content-Type');
             if (contentType.indexOf('multipart/mixed') >= 0) {
