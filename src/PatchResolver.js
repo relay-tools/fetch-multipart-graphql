@@ -58,6 +58,10 @@ PatchResolver.prototype.handleChunk = function(data) {
                     ...this.previousResponse,
                     data: applyPatch(this.previousResponse.data, part.path, part.data),
                     errors: mergeErrors(this.previousResponse.errors, part.errors),
+                    extensions: {
+                        ...this.previousResponse.extensions,
+                        ...path.extensions,
+                    }
                 };
             }
             this.processedChunks += 1;
