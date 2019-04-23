@@ -35,8 +35,9 @@ function mergeErrors(previousErrors, patchErrors) {
     return undefined;
 }
 
-export function PatchResolver({ onResponse }) {
+export function PatchResolver({ onResponse, mergeExtensions = () => {} }) {
     this.onResponse = onResponse;
+    this.mergeExtensions = mergeExtensions;
     this.previousResponse = null;
     this.processedChunks = 0;
     this.chunkBuffer = '';
@@ -58,6 +59,7 @@ PatchResolver.prototype.handleChunk = function(data) {
                     ...this.previousResponse,
                     data: applyPatch(this.previousResponse.data, part.path, part.data),
                     errors: mergeErrors(this.previousResponse.errors, part.errors),
+                    extensions: this.mergeExtensions(this.previousResponse.extensions, part.extensions),
                 };
             }
             this.processedChunks += 1;
