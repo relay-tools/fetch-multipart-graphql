@@ -13,7 +13,7 @@ export function fetchImpl(url, { method, headers, body, onNext, onError, onCompl
             const reader = response.body.getReader();
             const textDecoder = new TextDecoder();
             const patchResolver = new PatchResolver({ onResponse: r => onNext(r) });
-            reader.read().then(function sendNext({ value, done }) {
+            return reader.read().then(function sendNext({ value, done }) {
                 if (!done) {
                     let plaintext;
                     try {
@@ -33,7 +33,7 @@ export function fetchImpl(url, { method, headers, body, onNext, onError, onCompl
                 }
             });
         } else {
-            response.json().then(json => {
+            return response.json().then(json => {
                 onNext(json);
                 onComplete();
             });
