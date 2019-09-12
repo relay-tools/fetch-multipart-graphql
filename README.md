@@ -1,4 +1,5 @@
 # fetch-multipart-graphql
+
 Cross-browser function to fetch and parse streaming multipart graphql responses.
 
 This allows you to efficiently fetch streamed GraphQL responses that use the @defer directive as supported by [Apollo Server](https://blog.apollographql.com/introducing-defer-in-apollo-server-f6797c4e9d6e). It can be easily used in a Relay Modern network layer to support deferred queries.
@@ -8,7 +9,6 @@ This allows you to efficiently fetch streamed GraphQL responses that use the @de
 In a Relay Network Layer:
 
 ```javascript
-
 import fetchMultipart from 'fetch-multipart-graphql';
 import { Observable } from 'relay-runtime';
 
@@ -17,20 +17,24 @@ function fetchQuery(operation, variables) {
         fetchMultipart('/graphql', {
             method: 'POST',
             headers: {
-                'content-type': 'application/json'
+                'content-type': 'application/json',
             },
             body: JSON.stringify({
                 query: operation.text,
                 variables,
             }),
+            credentials: 'same-origin',
             onNext: json => sink.next(json),
             onError: err => sink.error(err),
             onComplete: () => sink.complete(),
         });
     });
 }
-
 ```
+
+#### Handling cookies and other auth headers
+
+The `credentials` param is passed to [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters). For XHR requests, [`XMLHttpRequest.withCredentials`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials) is mapped to true when `credentials: 'include'`.
 
 ## Browser Support
 
