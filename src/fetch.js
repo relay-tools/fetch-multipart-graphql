@@ -1,7 +1,7 @@
 import { PatchResolver } from './PatchResolver';
 
-export function fetchImpl(url, { method, headers, body, onNext, onError, onComplete }) {
-    return fetch(url, { method, headers, body }).then(response => {
+export function fetchImpl(url, { method, headers, credentials, body, onNext, onError, onComplete }) {
+    return fetch(url, { method, headers, body, credentials }).then(response => {
         // @defer uses multipart responses to stream patches over HTTP
         if (
             response.status < 300 &&
