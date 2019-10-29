@@ -11,13 +11,13 @@ function supportsXhrResponseType(type) {
     return false;
 }
 
-export function xhrImpl(url, { method, headers, credentials, body, onNext, onError, onComplete }) {
+export function xhrImpl(url, { method, headers, credentials, body, onNext, onError, onComplete, applyToPrevious }) {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = credentials === 'include'; // follow behavior of fetch credentials param https://github.com/github/fetch#sending-cookies
     let index = 0;
     let isDeferred = false;
 
-    const patchResolver = new PatchResolver({ onResponse: r => onNext(r) });
+    const patchResolver = new PatchResolver({ onResponse: r => onNext(r), applyToPrevious });
 
     function onReadyStateChange() {
         // The request failed, do nothing and let the error event fire

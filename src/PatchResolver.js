@@ -35,7 +35,8 @@ function mergeErrors(previousErrors, patchErrors) {
     return undefined;
 }
 
-export function PatchResolver({ onResponse, mergeExtensions = () => {} }) {
+export function PatchResolver({ onResponse, applyToPrevious, mergeExtensions = () => {} }) {
+    this.applyToPrevious = typeof applyToPrevious === 'boolean' ? applyToPrevious : true;
     this.onResponse = onResponse;
     this.mergeExtensions = mergeExtensions;
     this.previousResponse = null;
@@ -48,23 +49,27 @@ PatchResolver.prototype.handleChunk = function(data) {
     const { newBuffer, parts } = parseMultipartHttp(this.chunkBuffer);
     this.chunkBuffer = newBuffer;
     if (parts.length) {
-        parts.forEach(part => {
-            if (this.processedChunks === 0) {
-                this.previousResponse = part;
-            } else {
-                if (!(Array.isArray(part.path) && typeof part.data !== 'undefined')) {
-                    throw new Error('invalid patch format ' + JSON.stringify(part, null, 2));
+        if (this.applyToPrevious) {
+            parts.forEach(part => {
+                if (this.processedChunks === 0) {
+                    this.previousResponse = part;
+                } else {
+                    if (!(Array.isArray(part.path) && typeof part.data !== 'undefined')) {
+                        throw new Error('invalid patch format ' + JSON.stringify(part, null, 2));
+                    }
+                    this.previousResponse = {
+                        ...this.previousResponse,
+                        data: applyPatch(this.previousResponse.data, part.path, part.data),
+                        errors: mergeErrors(this.previousResponse.errors, part.errors),
+                        extensions: this.mergeExtensions(this.previousResponse.extensions, part.extensions),
+                    };
                 }
-                this.previousResponse = {
-                    ...this.previousResponse,
-                    data: applyPatch(this.previousResponse.data, part.path, part.data),
-                    errors: mergeErrors(this.previousResponse.errors, part.errors),
-                    extensions: this.mergeExtensions(this.previousResponse.extensions, part.extensions),
-                };
-            }
-            this.processedChunks += 1;
-        });
-        // don't need to re-trigger every intermediate state
-        this.onResponse(this.previousResponse);
+                this.processedChunks += 1;
+            });
+            // don't need to re-trigger every intermediate state
+            this.onResponse(this.previousResponse);
+        } else {
+            parts.forEach(part => this.onResponse(part));
+        }
     }
 };

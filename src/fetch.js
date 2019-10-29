@@ -1,6 +1,6 @@
 import { PatchResolver } from './PatchResolver';
 
-export function fetchImpl(url, { method, headers, credentials, body, onNext, onError, onComplete }) {
+export function fetchImpl(url, { method, headers, credentials, body, onNext, onError, onComplete, applyToPrevious }) {
     return fetch(url, { method, headers, body, credentials }).then(response => {
         // @defer uses multipart responses to stream patches over HTTP
         if (
@@ -12,7 +12,7 @@ export function fetchImpl(url, { method, headers, credentials, body, onNext, onE
             // For the majority of browsers with support for ReadableStream and TextDecoder
             const reader = response.body.getReader();
             const textDecoder = new TextDecoder();
-            const patchResolver = new PatchResolver({ onResponse: r => onNext(r) });
+            const patchResolver = new PatchResolver({ onResponse: r => onNext(r), applyToPrevious });
             return reader.read().then(function sendNext({ value, done }) {
                 if (!done) {
                     let plaintext;
