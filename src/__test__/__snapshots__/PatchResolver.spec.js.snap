@@ -44,6 +44,7 @@ Object {
       "message": "Not So Bad Error",
     },
   ],
+  "extensions": undefined,
 }
 `;
 
@@ -75,6 +76,7 @@ Object {
       "message": "Not So Bad Error",
     },
   ],
+  "extensions": undefined,
 }
 `;
 
@@ -138,6 +140,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -176,6 +179,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -214,6 +218,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -250,6 +255,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -313,6 +319,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -349,6 +356,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -387,6 +395,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -450,6 +459,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -488,5 +498,6 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
