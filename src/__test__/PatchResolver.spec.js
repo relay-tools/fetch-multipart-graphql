@@ -183,4 +183,21 @@ describe('PathResolver', function() {
         resolver.handleChunk(chunk3);
         expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
     });
+
+    it('should work when not applying to previous', function() {
+        const onResponse = jest.fn();
+        const resolver = new PatchResolver({
+            onResponse,
+            applyToPrevious: false,
+        });
+
+        const chunk2a = chunk2.substring(0, 35);
+        const chunk2b = chunk2.substring(35);
+
+        resolver.handleChunk(chunk1 + chunk2a);
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
+        onResponse.mockClear();
+        resolver.handleChunk(chunk2b);
+        expect(onResponse.mock.calls[0][0]).toMatchSnapshot();
+    });
 });

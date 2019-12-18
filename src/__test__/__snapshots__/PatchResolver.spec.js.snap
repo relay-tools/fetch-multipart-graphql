@@ -44,6 +44,7 @@ Object {
       "message": "Not So Bad Error",
     },
   ],
+  "extensions": undefined,
 }
 `;
 
@@ -75,6 +76,7 @@ Object {
       "message": "Not So Bad Error",
     },
   ],
+  "extensions": undefined,
 }
 `;
 
@@ -138,6 +140,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -176,6 +179,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -214,6 +218,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -250,6 +255,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -313,6 +319,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -349,6 +356,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -387,6 +395,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -450,6 +459,7 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
 }
 `;
 
@@ -488,5 +498,51 @@ Object {
     },
   },
   "errors": undefined,
+  "extensions": undefined,
+}
+`;
+
+exports[`PathResolver should work when not applying to previous 1`] = `
+Object {
+  "data": Object {
+    "viewer": Object {
+      "currencies": null,
+      "user": Object {
+        "items": Object {
+          "edges": Array [
+            Object {
+              "node": Object {
+                "isFavorite": null,
+              },
+            },
+            Object {
+              "node": Object {
+                "isFavorite": null,
+              },
+            },
+          ],
+        },
+        "profile": null,
+      },
+    },
+  },
+}
+`;
+
+exports[`PathResolver should work when not applying to previous 2`] = `
+Object {
+  "data": Array [
+    "USD",
+    "GBP",
+    "EUR",
+    "CAD",
+    "AUD",
+    "CHF",
+    "😂",
+  ],
+  "path": Array [
+    "viewer",
+    "currencies",
+  ],
 }
 `;
