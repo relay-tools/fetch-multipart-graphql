@@ -11,6 +11,6 @@ PatchResolver.prototype.handleChunk = function(data) {
     const { newBuffer, parts } = parseMultipartHttp(this.chunkBuffer);
     this.chunkBuffer = newBuffer;
     if (parts.length) {
-        parts.forEach(part => this.onResponse(part));
+        this.onResponse(parts);
     }
 };
