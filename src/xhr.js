@@ -11,7 +11,10 @@ function supportsXhrResponseType(type) {
     return false;
 }
 
-export function xhrImpl(url, { method, headers, credentials, body, onNext, onError, onComplete, applyToPrevious }) {
+export function xhrImpl(
+    url,
+    { method, headers, credentials, body, onNext, onError, onComplete, applyToPrevious }
+) {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = credentials === 'include'; // follow behavior of fetch credentials param https://github.com/github/fetch#sending-cookies
     let index = 0;
