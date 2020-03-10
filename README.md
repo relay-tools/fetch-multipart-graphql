@@ -24,7 +24,7 @@ function fetchQuery(operation, variables) {
                 variables,
             }),
             credentials: 'same-origin',
-            onNext: json => sink.next(json),
+            onNext: parts => sink.next(parts),
             onError: err => sink.error(err),
             onComplete: () => sink.complete(),
         });
