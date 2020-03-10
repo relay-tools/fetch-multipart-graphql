@@ -41,7 +41,7 @@ export function xhrImpl(
             patchResolver.handleChunk(chunk);
             index = xhr.responseText.length;
         } else if (this.readyState === this.DONE && !isDeferred) {
-            onNext(JSON.parse(xhr.response));
+            onNext([JSON.parse(xhr.response)]);
             onComplete();
         }
     }
