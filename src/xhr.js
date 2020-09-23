@@ -1,3 +1,4 @@
+import { getBoundary } from './getBoundary';
 import { PatchResolver } from './PatchResolver';
 
 function supportsXhrResponseType(type) {
@@ -11,16 +12,13 @@ function supportsXhrResponseType(type) {
     return false;
 }
 
-export function xhrImpl(
-    url,
-    { method, headers, credentials, body, onNext, onError, onComplete, applyToPrevious }
-) {
+export function xhrImpl(url, { method, headers, credentials, body, onNext, onError, onComplete }) {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = credentials === 'include'; // follow behavior of fetch credentials param https://github.com/github/fetch#sending-cookies
     let index = 0;
     let isDeferred = false;
-
-    const patchResolver = new PatchResolver({ onResponse: r => onNext(r), applyToPrevious });
+    let boundary;
+    let patchResolver;
 
     function onReadyStateChange() {
         // The request failed, do nothing and let the error event fire
@@ -32,6 +30,8 @@ export function xhrImpl(
             const contentType = xhr.getResponseHeader('Content-Type');
             if (contentType.indexOf('multipart/mixed') >= 0) {
                 isDeferred = true;
+                boundary = getBoundary(contentType);
+                patchResolver = new PatchResolver({ onResponse: (r) => onNext(r), boundary });
             }
         } else if (
             (this.readyState === this.LOADING || this.readyState === this.DONE) &&
@@ -57,7 +57,9 @@ export function xhrImpl(
     xhr.open(method, url);
 
     for (const [header, value] of Object.entries(headers)) {
-        xhr.setRequestHeader(header, value);
+        if (header !== 'referer') {
+            xhr.setRequestHeader(header, value);
+        }
     }
 
     if (supportsXhrResponseType('moz-chunked-text')) {
