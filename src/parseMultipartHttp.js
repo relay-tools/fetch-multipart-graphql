@@ -1,5 +1,10 @@
-const boundary = '\r\n---\r\n';
-const terminatingBoundary = '\r\n-----\r\n';
+function getDelimiter(boundary) {
+    return `\r\n--${boundary}\r\n`;
+}
+
+function getFinalDelimiter(boundary) {
+    return `\r\n--${boundary}--\r\n`;
+}
 
 function splitWithRest(string, delim) {
     const index = string.indexOf(delim);
@@ -9,10 +14,11 @@ function splitWithRest(string, delim) {
     return [string.substring(0, index), string.substring(index + delim.length)];
 }
 
-export function parseMultipartHttp(buffer, previousParts = []) {
-    let [, rest] = splitWithRest(buffer, boundary);
+export function parseMultipartHttp(buffer, boundary, previousParts = []) {
+    const delimeter = getDelimiter(boundary);
+    let [, rest] = splitWithRest(buffer, delimeter);
     if (!(rest && rest.length)) {
-        // we did not finish receiving the initial boundary
+        // we did not finish receiving the initial delimeter
         return {
             newBuffer: buffer,
             parts: previousParts,
@@ -32,7 +38,7 @@ export function parseMultipartHttp(buffer, previousParts = []) {
 
     const headersArr = headers.split('\r\n');
     const contentLengthHeader = headersArr.find(
-        headerLine => headerLine.toLowerCase().indexOf('content-length:') >= 0
+        (headerLine) => headerLine.toLowerCase().indexOf('content-length:') >= 0
     );
     if (contentLengthHeader === undefined) {
         throw new Error('Invalid MultiPart Response, no content-length header');
@@ -45,8 +51,9 @@ export function parseMultipartHttp(buffer, previousParts = []) {
         throw new Error('Invalid MultiPart Response, could not parse content-length');
     }
 
-    // Strip out the terminating boundary
-    rest = rest.replace(terminatingBoundary, '');
+    // Strip out the final delimiter
+    const finalDelimeter = getFinalDelimiter(boundary);
+    rest = rest.replace(finalDelimeter, '');
     const uint = new TextEncoder().encode(rest);
 
     if (uint.length < contentLength) {
@@ -63,7 +70,7 @@ export function parseMultipartHttp(buffer, previousParts = []) {
     const newParts = [...previousParts, part];
 
     if (nextBuffer.length) {
-        return parseMultipartHttp(nextBuffer, newParts);
+        return parseMultipartHttp(nextBuffer, boundary, newParts);
     }
     return { parts: newParts, newBuffer: '' };
 }

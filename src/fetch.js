@@ -1,24 +1,23 @@
 import { PatchResolver } from './PatchResolver';
+import { getBoundary } from './getBoundary';
 
 export function fetchImpl(
     url,
-    { method, headers, credentials, body, onNext, onError, onComplete, applyToPrevious }
+    { method, headers, credentials, body, onNext, onError, onComplete }
 ) {
     return fetch(url, { method, headers, body, credentials })
-        .then(response => {
+        .then((response) => {
+            const contentType = (!!response.headers && response.headers.get('Content-Type')) || '';
             // @defer uses multipart responses to stream patches over HTTP
-            if (
-                response.status < 300 &&
-                response.headers &&
-                response.headers.get('Content-Type') &&
-                response.headers.get('Content-Type').indexOf('multipart/mixed') >= 0
-            ) {
+            if (response.status < 300 && contentType.indexOf('multipart/mixed') >= 0) {
+                const boundary = getBoundary(contentType);
+
                 // For the majority of browsers with support for ReadableStream and TextDecoder
                 const reader = response.body.getReader();
                 const textDecoder = new TextDecoder();
                 const patchResolver = new PatchResolver({
-                    onResponse: r => onNext(r),
-                    applyToPrevious,
+                    onResponse: (r) => onNext(r),
+                    boundary,
                 });
                 return reader.read().then(function sendNext({ value, done }) {
                     if (!done) {
@@ -40,7 +39,7 @@ export function fetchImpl(
                     }
                 });
             } else {
-                return response.json().then(json => {
+                return response.json().then((json) => {
                     onNext([json]);
                     onComplete();
                 });
