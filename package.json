@@ -3,6 +3,7 @@
   "version": "2.1.0",
   "description": "Cross browser function to fetch and parse streaming multipart graphql responses.",
   "main": "dist/index.js",
+  "types": "./typings.d.ts",
   "repository": "git@github.com:relay-tools/fetch-multipart-graphql.git",
   "author": "Rob Richard <rob@robrichard.net>",
   "license": "MIT",
