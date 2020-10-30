@@ -23,11 +23,7 @@
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "jest": "^23.4.2",
-    "graphql": "15.4.0-experimental-stream-defer.1"
+    "jest": "^23.4.2"
   },
-  "dependencies": {},
-  "peerDependencies": {
-    "graphql": "^15.4.0 || 15.4.0-experimental-stream-defer.1"
-  }
+  "dependencies": {}
 }

@@ -1,19 +1,18 @@
 // Minimum TypeScript Version: 3.0
-import { ExecutionResult} from "graphql"
 
-declare class PatchResolver {
+declare class PatchResolver<T = unknown> {
     constructor(params?: { 
-        onResponse: (result: ExecutionResult[]) => void
+        onResponse: (result: T[]) => void
         boundary?: string;
     })
 }
 
-declare function MultipartFetchFunction(url: string, params: {
+declare function MultipartFetchFunction<T = unknown>(url: string, params: {
     method?: string;
     headers?: Record<string, string>;
     credentials?: string;
     body?: string;
-    onNext: (result: ExecutionResult) => void;
+    onNext: (result: T[]) => void;
     onError: (error: unknown) => void;
     onComplete : () => void
 }): void
