@@ -6,16 +6,12 @@ global.TextDecoder = TextDecoder;
 
 function getMultiPartResponse(data, boundary) {
     const json = JSON.stringify(data);
-    const chunk = Buffer.from(json, 'utf8');
 
     return [
-        '',
-        `--${boundary}`,
         'Content-Type: application/json',
-        `Content-Length: ${String(chunk.length)}`,
         '',
         json,
-        '',
+        `--${boundary}\r\n`,
     ].join('\r\n');
 }
 
@@ -65,6 +61,8 @@ describe('PathResolver', function () {
                     boundary,
                 });
 
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
+
                 resolver.handleChunk(chunk1);
                 expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
 
@@ -88,13 +86,11 @@ describe('PathResolver', function () {
                     boundary,
                 });
 
-                if (boundary === 'gc0p4Jq0M2Yt08jU534c0p') {
-                    debugger;
-                }
-
                 const chunk1a = chunk1.substr(0, 35);
                 const chunk1b = chunk1.substr(35, 80);
                 const chunk1c = chunk1.substr(35 + 80);
+
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
 
                 resolver.handleChunk(chunk1a);
                 expect(onResponse).not.toHaveBeenCalled();
@@ -132,6 +128,8 @@ describe('PathResolver', function () {
                     boundary,
                 });
 
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
+
                 resolver.handleChunk(chunk1 + chunk2);
                 expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data, chunk2Data]);
             });
@@ -146,6 +144,8 @@ describe('PathResolver', function () {
                 const chunk3a = chunk3.substr(0, 11);
                 const chunk3b = chunk3.substr(11, 20);
                 const chunk3c = chunk3.substr(11 + 20);
+
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
 
                 resolver.handleChunk(chunk1 + chunk2 + chunk3a);
                 expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data, chunk2Data]);
@@ -163,6 +163,8 @@ describe('PathResolver', function () {
                     onResponse,
                     boundary,
                 });
+
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
 
                 const chunk2a = chunk2.substring(0, 35);
                 const chunk2b = chunk2.substring(35);
