@@ -1,28 +1,28 @@
 {
-  "name": "fetch-multipart-graphql",
-  "version": "3.0.0",
-  "description": "Cross browser function to fetch and parse streaming multipart graphql responses.",
-  "main": "dist/index.js",
-  "types": "./typings.d.ts",
-  "repository": "git@github.com:relay-tools/fetch-multipart-graphql.git",
-  "author": "Rob Richard <rob@robrichard.net>",
-  "license": "MIT",
-  "scripts": {
-    "test": "jest",
-    "build": "babel src --out-dir dist --ignore '**/*.spec.js'",
-    "prepublishOnly": "yarn run build"
-  },
-  "jest": {
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/dist/"
-    ],
-    "testEnvironment": "node"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.12.1",
-    "@babel/preset-env": "^7.12.1",
-    "jest": "^26.6.1"
-  },
-  "dependencies": {}
+    "name": "fetch-multipart-graphql",
+    "version": "3.0.0",
+    "description": "Cross browser function to fetch and parse streaming multipart graphql responses.",
+    "main": "dist/index.js",
+    "types": "./typings.d.ts",
+    "repository": "git@github.com:relay-tools/fetch-multipart-graphql.git",
+    "author": "Rob Richard <rob@robrichard.net>",
+    "license": "MIT",
+    "scripts": {
+        "test": "jest",
+        "build": "babel src --out-dir dist --ignore '**/*.spec.js'",
+        "prepublishOnly": "yarn run build"
+    },
+    "jest": {
+        "testPathIgnorePatterns": [
+            "/node_modules/",
+            "/dist/"
+        ],
+        "testEnvironment": "node"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.12.1",
+        "@babel/preset-env": "^7.12.1",
+        "jest": "^27.0.4 "
+    },
+    "dependencies": {}
 }
