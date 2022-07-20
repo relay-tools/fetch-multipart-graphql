@@ -1,11 +1,8 @@
 import { PatchResolver } from './PatchResolver';
 import { getBoundary } from './getBoundary';
 
-export function fetchImpl(
-    url,
-    { method, headers, credentials, body, onNext, onError, onComplete }
-) {
-    return fetch(url, { method, headers, body, credentials })
+export function fetchImpl(url, { onNext, onComplete, onError, ...fetchOptions }) {
+    return fetch(url, fetchOptions)
         .then((response) => {
             const contentType = (!!response.headers && response.headers.get('Content-Type')) || '';
             // @defer uses multipart responses to stream patches over HTTP
