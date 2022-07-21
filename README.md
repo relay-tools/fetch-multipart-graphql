@@ -36,6 +36,11 @@ function fetchQuery(operation, variables) {
 
 The `credentials` param is passed to [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters). For XHR requests, [`XMLHttpRequest.withCredentials`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials) is mapped to true when `credentials: 'include'`.
 
+#### Handling additional request settings
+
+When `fetch` is not available requests are sent through XHR, which supports standard `method`, `headers`, `credentials` and `body` settings; as seen in the code example above. 
+When requests are sent through `fetch` we can also set, in addition to the properties already mentioned, all the [options supported by fetch](https://developer.mozilla.org/en-US/docs/Web/API/fetch#options).
+
 ## Browser Support
 
 Tested in the latest Chrome, Firefox, Safari, Edge, and Internet Explorer 11. Requires a polyfill for TextEncoder/Decoder. Since only utf-8 encoding is required, it's recommended to use [text-encoding-utf-8](https://www.npmjs.com/package/text-encoding-utf-8) to minimize impact on bundle size.
