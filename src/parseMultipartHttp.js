@@ -2,6 +2,10 @@ function getDelimiter(boundary) {
     return `\r\n--${boundary}\r\n`;
 }
 
+function getClosingDelimiter(boundary) {
+    return `\r\n--${boundary}--\r\n`;
+}
+
 function splitWithRest(string, delim) {
     const index = string.indexOf(delim);
     if (index < 0) {
@@ -13,7 +17,7 @@ function splitWithRest(string, delim) {
 export function parseMultipartHttp(buffer, boundary, previousParts = [], isPreamble = true) {
     const delimiter = getDelimiter(boundary);
 
-    const [region, next] = splitWithRest(buffer, delimiter);
+    let [region, next] = splitWithRest(buffer, delimiter);
 
     if (region !== undefined && (region.length || region.trim() === '') && isPreamble) {
         if (next && next.length) {
@@ -24,21 +28,24 @@ export function parseMultipartHttp(buffer, boundary, previousParts = [], isPream
         }
     }
 
-    if (!(region && region.length)) {
-        // we need more things
-        return {
-            newBuffer: buffer,
-            parts: previousParts,
-            isPreamble
-        };
+    if (!region) {
+        const closingDelimiter = getClosingDelimiter(boundary);
+        [region, next] = splitWithRest(buffer, closingDelimiter);
+
+        if (!region) {
+            // we need more things
+            return {
+                newBuffer: buffer,
+                parts: previousParts,
+                isPreamble,
+            };
+        }
     }
 
     let [_headers, body] = splitWithRest(region, '\r\n\r\n');
 
     // remove trailing boundary things
-    body = body
-        .replace(delimiter + '\r\n', '')
-        .replace(delimiter + '--\r\n', '');
+    body = body.replace(delimiter + '\r\n', '').replace(delimiter + '--\r\n', '');
 
     const payload = JSON.parse(body);
     const parts = [...previousParts, payload];

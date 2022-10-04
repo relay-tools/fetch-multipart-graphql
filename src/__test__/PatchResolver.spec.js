@@ -7,12 +7,7 @@ global.TextDecoder = TextDecoder;
 function getMultiPartResponse(data, boundary) {
     const json = JSON.stringify(data);
 
-    return [
-        'Content-Type: application/json',
-        '',
-        json,
-        `--${boundary}\r\n`,
-    ].join('\r\n');
+    return ['Content-Type: application/json', '', json, `--${boundary}\r\n`].join('\r\n');
 }
 
 describe('PathResolver', function () {
@@ -192,6 +187,117 @@ describe('PathResolver', function () {
                 onResponse.mockClear();
                 resolver.handleChunk(chunk2b);
                 expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+            });
+            it('should work when final chunk ends with terminating boundary', function () {
+                const onResponse = jest.fn();
+                const resolver = new PatchResolver({
+                    onResponse,
+                    boundary,
+                });
+
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
+
+                expect(onResponse).not.toHaveBeenCalled();
+
+                resolver.handleChunk(chunk1);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk2);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk3);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+
+                onResponse.mockClear();
+                const chunk4FinalBoundary = getMultiPartResponse(chunk4Data, `${boundary}--`);
+                resolver.handleChunk(chunk4FinalBoundary);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+            });
+
+            it('should work with preamble', function () {
+                const onResponse = jest.fn();
+                const resolver = new PatchResolver({
+                    onResponse,
+                    boundary,
+                });
+
+                resolver.handleChunk(`This is some preamble data that should be ignored\r\n`);
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
+
+                expect(onResponse).not.toHaveBeenCalled();
+
+                resolver.handleChunk(chunk1);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk2);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk3);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+
+                onResponse.mockClear();
+                const chunk4FinalBoundary = getMultiPartResponse(chunk4Data, `${boundary}--`);
+                resolver.handleChunk(chunk4FinalBoundary);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+            });
+            it('should work with epilogue', function () {
+                const onResponse = jest.fn();
+                const resolver = new PatchResolver({
+                    onResponse,
+                    boundary,
+                });
+
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
+
+                expect(onResponse).not.toHaveBeenCalled();
+
+                resolver.handleChunk(chunk1);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk2);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk3);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk4);
+                resolver.handleChunk(`This is some epilogue data that should be ignored\r\n`);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+            });
+            it('should work with epilogue after chunk with terminating boundary', function () {
+                const onResponse = jest.fn();
+                const resolver = new PatchResolver({
+                    onResponse,
+                    boundary,
+                });
+
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
+
+                expect(onResponse).not.toHaveBeenCalled();
+
+                resolver.handleChunk(chunk1);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk2);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk3);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+
+                onResponse.mockClear();
+                const chunk4FinalBoundary = getMultiPartResponse(chunk4Data, `${boundary}--`);
+                resolver.handleChunk(chunk4FinalBoundary);
+                resolver.handleChunk(`This is some epilogue data that should be ignored\r\n`);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
             });
         });
     }
