@@ -13,7 +13,7 @@ export function fetchImpl(url, { onNext, onComplete, onError, ...fetchOptions })
                 const reader = response.body.getReader();
                 const textDecoder = new TextDecoder();
                 const patchResolver = new PatchResolver({
-                    onResponse: (r) => onNext(r),
+                    onResponse: (r) => onNext(r, { responseHeaders: response.headers }),
                     boundary,
                 });
                 return reader.read().then(function sendNext({ value, done }) {
