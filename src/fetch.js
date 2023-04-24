@@ -37,7 +37,7 @@ export function fetchImpl(url, { onNext, onComplete, onError, ...fetchOptions })
                 });
             } else {
                 return response.json().then((json) => {
-                    onNext([json]);
+                    onNext([json], { responseHeaders: response.headers });
                     onComplete();
                 });
             }
