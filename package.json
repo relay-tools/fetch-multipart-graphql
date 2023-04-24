@@ -1,6 +1,6 @@
 {
   "name": "fetch-multipart-graphql",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "description": "Cross browser function to fetch and parse streaming multipart graphql responses.",
   "main": "dist/index.js",
   "repository": "git@github.com:relay-tools/fetch-multipart-graphql.git",
