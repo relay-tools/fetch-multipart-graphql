@@ -31,7 +31,7 @@ export function xhrImpl(url, { method, headers, credentials, body, onNext, onErr
             if (contentType.indexOf('multipart/mixed') >= 0) {
                 isDeferred = true;
                 boundary = getBoundary(contentType);
-                patchResolver = new PatchResolver({ onResponse: (r) => onNext(r), boundary });
+                patchResolver = new PatchResolver({ onResponse: (r) => onNext(r, {}), boundary });
             }
         } else if (
             (this.readyState === this.LOADING || this.readyState === this.DONE) &&
@@ -41,7 +41,7 @@ export function xhrImpl(url, { method, headers, credentials, body, onNext, onErr
             patchResolver.handleChunk(chunk);
             index = xhr.responseText.length;
         } else if (this.readyState === this.DONE && !isDeferred) {
-            onNext([JSON.parse(xhr.response)]);
+            onNext([JSON.parse(xhr.response)], {});
             onComplete();
         }
     }
