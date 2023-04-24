@@ -40,7 +40,7 @@ export function fetchImpl(
                 });
             } else {
                 return response.json().then((json) => {
-                    onNext([json]);
+                    onNext([json], { responseHeaders: response.headers });
                     onComplete();
                 });
             }
