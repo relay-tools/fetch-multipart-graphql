@@ -39,6 +39,11 @@ export function fetchImpl(url, { onNext, onComplete, onError, ...fetchOptions })
                 return response.json().then((json) => {
                     onNext([json], { responseHeaders: response.headers });
                     onComplete();
+                }, (err) => {
+                    const parseError = err;
+                    parseError.response = response;
+                    parseError.statusCode = response.status;
+                    onError(parseError);
                 });
             }
         })
