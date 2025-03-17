@@ -1,6 +1,6 @@
 {
     "name": "fetch-multipart-graphql",
-    "version": "3.2.1",
+    "version": "3.2.2",
     "description": "Cross browser function to fetch and parse streaming multipart graphql responses.",
     "main": "dist/index.js",
     "types": "./typings.d.ts",
