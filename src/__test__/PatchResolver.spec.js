@@ -4,10 +4,13 @@ import { TextEncoder, TextDecoder } from 'util';
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
-function getMultiPartResponse(data, boundary) {
+function getMultiPartResponse(data, boundary, includeTrailingLineBreak = true) {
     const json = JSON.stringify(data);
+    const maybeLineBreak = includeTrailingLineBreak ? '\r\n' : '';
 
-    return ['Content-Type: application/json', '', json, `--${boundary}\r\n`].join('\r\n');
+    return ['Content-Type: application/json', '', json, `--${boundary}${maybeLineBreak}`].join(
+        '\r\n'
+    );
 }
 
 describe('PathResolver', function () {
@@ -188,6 +191,39 @@ describe('PathResolver', function () {
                 resolver.handleChunk(chunk2b);
                 expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
             });
+
+            it('should work when final chunk ends with terminating boundary and no line break', function () {
+                const onResponse = jest.fn();
+                const resolver = new PatchResolver({
+                    onResponse,
+                    boundary,
+                });
+
+                resolver.handleChunk(`\r\n--${boundary}\r\n`);
+
+                expect(onResponse).not.toHaveBeenCalled();
+
+                resolver.handleChunk(chunk1);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk2);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk3);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+
+                onResponse.mockClear();
+                const chunk4FinalBoundary = getMultiPartResponse(
+                    chunk4Data,
+                    `${boundary}--`,
+                    false
+                );
+                resolver.handleChunk(chunk4FinalBoundary);
+                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+            });
+
             it('should work when final chunk ends with terminating boundary', function () {
                 const onResponse = jest.fn();
                 const resolver = new PatchResolver({
