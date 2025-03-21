@@ -3,7 +3,7 @@ function getDelimiter(boundary) {
 }
 
 function getClosingDelimiter(boundary) {
-    return `\r\n--${boundary}--\r\n`;
+    return `\r\n--${boundary}--`;
 }
 
 function splitWithRest(string, delim) {
