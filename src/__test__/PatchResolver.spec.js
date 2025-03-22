@@ -10,6 +10,13 @@ function getMultiPartResponse(data, boundary) {
     return ['Content-Type: application/json', '', json, `--${boundary}\r\n`].join('\r\n');
 }
 
+function assertChunksRecieved(mockCall, chunks) {
+    const nonIncrementalChunks = chunks.flatMap((chunk) =>
+        chunk.incremental ? chunk.incremental : chunk
+    );
+    expect(mockCall).toEqual(nonIncrementalChunks);
+}
+
 describe('PathResolver', function () {
     for (const boundary of ['-', 'gc0p4Jq0M2Yt08jU534c0p']) {
         describe(`boundary ${boundary}`, () => {
@@ -32,23 +39,48 @@ describe('PathResolver', function () {
             const chunk1 = getMultiPartResponse(chunk1Data, boundary);
 
             const chunk2Data = {
-                path: ['viewer', 'currencies'],
-                data: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'], // test unicode
-                errors: [{ message: 'Not So Bad Error' }],
+                incremental: [
+                    {
+                        path: ['viewer', 'currencies'],
+                        data: ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'CHF', '😂'], // test unicode
+                        errors: [{ message: 'Not So Bad Error' }],
+                    },
+                ],
             };
             const chunk2 = getMultiPartResponse(chunk2Data, boundary);
 
             const chunk3Data = {
-                path: ['viewer', 'user', 'profile'],
-                data: { displayName: 'Steven Seagal' },
+                incremental: [
+                    {
+                        path: ['viewer', 'user', 'profile'],
+                        data: { displayName: 'Steven Seagal' },
+                    },
+                ],
             };
             const chunk3 = getMultiPartResponse(chunk3Data, boundary);
 
             const chunk4Data = {
-                data: false,
-                path: ['viewer', 'user', 'items', 'edges', 1, 'node', 'isFavorite'],
+                incremental: [
+                    {
+                        data: false,
+                        path: ['viewer', 'user', 'items', 'edges', 1, 'node', 'isFavorite'],
+                    },
+                ],
             };
             const chunk4 = getMultiPartResponse(chunk4Data, boundary);
+            const chunk5Data = {
+                incremental: [
+                    {
+                        data: true,
+                        path: ['viewer', 'user', 'items', 'edges', 2, 'node', 'isFavorite'],
+                    },
+                    {
+                        data: false,
+                        path: ['viewer', 'user', 'items', 'edges', 3, 'node', 'isFavorite'],
+                    },
+                ],
+            };
+            const chunk5 = getMultiPartResponse(chunk5Data, boundary);
             it('should work on each chunk', function () {
                 const onResponse = jest.fn();
                 const resolver = new PatchResolver({
@@ -61,19 +93,23 @@ describe('PathResolver', function () {
                 expect(onResponse).not.toHaveBeenCalled();
 
                 resolver.handleChunk(chunk1);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk2);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk2Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk3);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk3Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk4);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk4Data]);
+
+                onResponse.mockClear();
+                resolver.handleChunk(chunk5);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk5Data]);
             });
 
             it('should work when chunks are split', function () {
@@ -96,7 +132,7 @@ describe('PathResolver', function () {
                 resolver.handleChunk(chunk1b);
                 expect(onResponse).not.toHaveBeenCalled();
                 resolver.handleChunk(chunk1c);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data]);
                 onResponse.mockClear();
 
                 const chunk2a = chunk2.substr(0, 35);
@@ -105,7 +141,7 @@ describe('PathResolver', function () {
                 resolver.handleChunk(chunk2a);
                 expect(onResponse).not.toHaveBeenCalled();
                 resolver.handleChunk(chunk2b);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk2Data]);
                 onResponse.mockClear();
 
                 const chunk3a = chunk3.substr(0, 10);
@@ -117,7 +153,7 @@ describe('PathResolver', function () {
                 resolver.handleChunk(chunk3b);
                 expect(onResponse).not.toHaveBeenCalled();
                 resolver.handleChunk(chunk3c);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk3Data]);
             });
 
             it('should work when chunks are combined', function () {
@@ -132,7 +168,7 @@ describe('PathResolver', function () {
                 expect(onResponse).not.toHaveBeenCalled();
 
                 resolver.handleChunk(chunk1 + chunk2);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data, chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data, chunk2Data]);
             });
 
             it('should work when chunks are combined and split', function () {
@@ -159,13 +195,13 @@ describe('PathResolver', function () {
                 expect(onResponse).not.toHaveBeenCalled();
 
                 resolver.handleChunk(chunk1 + chunk2 + chunk3a);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data, chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data, chunk2Data]);
                 onResponse.mockClear();
 
                 resolver.handleChunk(chunk3b);
                 expect(onResponse).not.toHaveBeenCalled();
                 resolver.handleChunk(chunk3c);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk3Data]);
             });
 
             it('should work when chunks are combined across boundaries', function () {
@@ -183,10 +219,10 @@ describe('PathResolver', function () {
                 const chunk2b = chunk2.substring(35);
 
                 resolver.handleChunk(chunk1 + chunk2a);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data]);
                 onResponse.mockClear();
                 resolver.handleChunk(chunk2b);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk2Data]);
             });
             it('should work when final chunk ends with terminating boundary', function () {
                 const onResponse = jest.fn();
@@ -200,20 +236,20 @@ describe('PathResolver', function () {
                 expect(onResponse).not.toHaveBeenCalled();
 
                 resolver.handleChunk(chunk1);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk2);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk2Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk3);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk3Data]);
 
                 onResponse.mockClear();
                 const chunk4FinalBoundary = getMultiPartResponse(chunk4Data, `${boundary}--`);
                 resolver.handleChunk(chunk4FinalBoundary);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk4Data]);
             });
 
             it('should work with preamble', function () {
@@ -229,20 +265,20 @@ describe('PathResolver', function () {
                 expect(onResponse).not.toHaveBeenCalled();
 
                 resolver.handleChunk(chunk1);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk2);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk2Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk3);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk3Data]);
 
                 onResponse.mockClear();
                 const chunk4FinalBoundary = getMultiPartResponse(chunk4Data, `${boundary}--`);
                 resolver.handleChunk(chunk4FinalBoundary);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk4Data]);
             });
             it('should work with epilogue', function () {
                 const onResponse = jest.fn();
@@ -256,20 +292,20 @@ describe('PathResolver', function () {
                 expect(onResponse).not.toHaveBeenCalled();
 
                 resolver.handleChunk(chunk1);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk2);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk2Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk3);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk3Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk4);
                 resolver.handleChunk(`This is some epilogue data that should be ignored\r\n`);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk4Data]);
             });
             it('should work with epilogue after chunk with terminating boundary', function () {
                 const onResponse = jest.fn();
@@ -283,21 +319,21 @@ describe('PathResolver', function () {
                 expect(onResponse).not.toHaveBeenCalled();
 
                 resolver.handleChunk(chunk1);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk1Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk1Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk2);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk2Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk2Data]);
 
                 onResponse.mockClear();
                 resolver.handleChunk(chunk3);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk3Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk3Data]);
 
                 onResponse.mockClear();
                 const chunk4FinalBoundary = getMultiPartResponse(chunk4Data, `${boundary}--`);
                 resolver.handleChunk(chunk4FinalBoundary);
                 resolver.handleChunk(`This is some epilogue data that should be ignored\r\n`);
-                expect(onResponse.mock.calls[0][0]).toEqual([chunk4Data]);
+                assertChunksRecieved(onResponse.mock.calls[0][0], [chunk4Data]);
             });
         });
     }
