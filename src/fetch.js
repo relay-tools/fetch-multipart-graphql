@@ -35,6 +35,11 @@ export function fetchImpl(url, { onNext, onComplete, onError, ...fetchOptions })
                         onComplete();
                     }
                 });
+            } else if (response.status >= 300) {
+                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                error.response = response;
+                error.statusCode = response.status;
+                onError(error);
             } else {
                 return response.json().then((json) => {
                     onNext([json], { responseHeaders: response.headers });
