@@ -2,6 +2,10 @@ function getDelimiter(boundary) {
     return `\r\n--${boundary}\r\n`;
 }
 
+function getDelimiterWithoutCrlf(boundary) {
+    return `\r\n--${boundary}`;
+}
+
 function getClosingDelimiter(boundary) {
     return `\r\n--${boundary}--\r\n`;
 }
@@ -18,6 +22,17 @@ export function parseMultipartHttp(buffer, boundary, previousParts = [], isPream
     const delimiter = getDelimiter(boundary);
 
     let [region, next] = splitWithRest(buffer, delimiter);
+    if (!region) {
+        // If no part is found when splitting on full delimiter, try splitting
+        // on partial delimiter without trailing CRLF.
+        //
+        // It's possible the buffer contains an incomplete multipart message,
+        // and the trailing CRLF in the boundary is missing and will only be
+        // included in the next patch payload. graphql-yoga may end
+        // intermediate parts like this when @defer is used.
+        const delimiterWithoutCrlf = getDelimiterWithoutCrlf(boundary);
+        [region, next] = splitWithRest(buffer, delimiterWithoutCrlf);
+    }
 
     if (region !== undefined && (region.length || region.trim() === '') && isPreamble) {
         if (next && next.length) {
