@@ -12,7 +12,7 @@ declare function MultipartFetchFunction<T = unknown>(url: string, params: {
     headers?: Record<string, string>;
     credentials?: string;
     body?: string;
-    onNext: (result: T[]) => void;
+    onNext: (result: T[], meta?: { responseHeaders?: Headers; status?: number }) => void;
     onError: (error: unknown) => void;
     onComplete : () => void
 }): void
