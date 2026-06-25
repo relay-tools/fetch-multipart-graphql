@@ -13,7 +13,7 @@ export function fetchImpl(url, { onNext, onComplete, onError, ...fetchOptions })
                 const reader = response.body.getReader();
                 const textDecoder = new TextDecoder();
                 const patchResolver = new PatchResolver({
-                    onResponse: (r) => onNext(r, { responseHeaders: response.headers }),
+                    onResponse: (r) => onNext(r, { responseHeaders: response.headers, status: response.status }),
                     boundary,
                 });
                 return reader.read().then(function sendNext({ value, done }) {
@@ -37,7 +37,7 @@ export function fetchImpl(url, { onNext, onComplete, onError, ...fetchOptions })
                 });
             } else {
                 return response.json().then((json) => {
-                    onNext([json], { responseHeaders: response.headers });
+                    onNext([json], { responseHeaders: response.headers, status: response.status });
                     onComplete();
                 }, (err) => {
                     const parseError = err;
